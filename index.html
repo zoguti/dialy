@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <!-- Bootstrap -->
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="js/default/jquery-2.1.4.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="js/default/bootstrap.min.js"></script>
+        <script src="js/kzl-tools.js"></script>
+
+         <title>日記帳</title>
+        <link rel="stylesheet" href="css/main.css" type="text/css" media="all">
+        <script src="js/main.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <!-- ↓ ここにタグを追加-->
+            <h1>日記帳</h1>
+
+            <form>
+              タイトル:<input type="text" id="dialyTitle" placeholder="タイトルを入れてください">
+              <br>
+
+              日付:<input type="text" id="dialyDate" >
+              <br>
+              <textarea  id="dialyContents" rows="10" cols="50" placeholder="メモしたい内容を入れてください"></textarea>
+              <button type="button" id="hozon">保存する</button>
+              <button type="button" id="sakujo">削除</button>
+
+            </form>
+            <div id="rireki">
+
+
+
+
+            </div>
+
+
+            <script type="text/javascript">
+            window.onload=load;
+
+            function load(){
+                kzlGetElement('rireki').textContent=null;
+              for(var num=0;num<localStorage.length;num++){
+                var key=localStorage.key(num);
+
+                var result=key.match(/(\d{4})年(\d{2})月(\d{2})日/);
+                if(result){
+                kzlGetElement('rireki').innerHTML+="<a onclick='kzl(id)'id="+key+">"+key+"</a><br>";
+                }
+              }
+            }
+              kzlSetInputValue('dialyDate',getNow());
+
+              kzlGetDialyValues()
+              function getNow(){
+                var now=new Date();
+                var year=now.getFullYear();
+                var mon=now.getMonth()+1;
+                if (mon<10){
+                  mon="0"+mon;
+                }
+                var day=now.getDate();
+                if(day<10){
+                  day="0"+day;
+                }
+                var s=year+"年"+mon+"月"+day+"日";
+                return s;
+              }
+
+              kzlAddEvent('hozon','click',function(){
+                var Title=kzlGetInputValue('dialyTitle');
+                var Now=kzlGetInputValue('dialyDate');
+                var Contents=kzlGetInputValue('dialyContents');
+
+                //正規表現
+                var result=Now.match(/(\d{4})年(\d{2})月(\d{2})日/);
+          
+
+                if(Title==""){
+                  alert("タイトルは必須です。保存に失敗しました。");
+                }else if(typeof Title!="string"){//微妙
+                  alert("文字列で入力してください。保存に失敗しました");
+                }else if(Title.length>30){
+                  alert("30文字以内にしてください。保存に失敗しました。");
+                }else if (!result) {
+                  alert("日付の形式が違います");
+
+                }else if(Contents.length>500){
+                  alert("メモの内容が500文字を超えました。保存に失敗しました。");
+                }else{//保存
+                  kzlSetDialyValues(Now,Title,Contents);
+
+                  kzlGetElement('rireki').innerHTML+="<a onclick='kzl(id)'id="+Now+">"+Now+"</a><br>";
+
+                  alert("内容を保存しました");
+                  load();
+
+                }
+              });
+
+
+
+
+
+
+              function kzl(id){
+                var V=kzlGetDialyValues(id);
+                console.log(id);
+                kzlSetInputValue('dialyTitle',V['title']);
+                kzlSetInputValue('dialyDate',id);
+                kzlSetInputValue('dialyContents',V['contents']);
+              }
+
+
+
+
+              kzlAddEvent('sakujo','click',function(){
+                var Date=kzlGetInputValue('dialyDate');
+                console.log(Date);
+                if(kzlGetDialyValues(Date)){
+                  var result=window.confirm("削除してもよろしいですか？");
+                  if(result){
+                    kzlRemoveDialyValues(Date);
+
+                    alert(Date+"の日記を削除しました");
+                    load();//再読み込み
+
+                  }
+                }else{
+                  alert("削除する日記が存在しません");
+                }
+
+
+              });
+            </script>
+
+            <!-- ↑タグ追加ここまで-->
+        </div>
+    </body>
+
+</html>
